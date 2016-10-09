@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+
+    <style>
+        .formulas {
+            list-style: none;
+        }
+
+        .results,
+        .results td{
+            border: 1px solid #333;
+            border-collapse: collapse;
+        }
+    </style>
+</head>
+<body ng-app='FormulaCalc'>
+    <h1>Вычисление значений функций</h1>
+    <div ng-controller="FormulaController as App">
+        <h2>Выберите функцию: </h2>
+        <ul class="formulas">
+            <li ng-repeat="formula in App.formulas">
+                <label>
+                    <input type="radio"
+                        name="formula"
+                        ng-model="App.selectedFormula"
+                        value="{{ formula.name }}">
+                    {{ formula.name }}
+                </label>
+            </li>
+        </ul>
+        <form 
+            ng-submit="App.calculateFormula()"
+            ng-if="App.showArgumentForm">
+            <label>a: <input type="number" ng-model="App.aArgument"></label><br>
+            <label>b: <input type="number" ng-model="App.bArgument"></label><br>
+            <input type="submit">
+        </form>
+
+        <table class="results" ng-if="App.results.length">
+            <tr>
+                <td>x</td>
+                <td>-10</td>
+                <td>-9</td>
+                <td>-8</td>
+                <td>-7</td>
+                <td>-6</td>
+                <td>-5</td>
+                <td>-4</td>
+                <td>-3</td>
+                <td>-2</td>
+                <td>-1</td>
+                <td>0</td>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+                <td>5</td>
+                <td>6</td>
+                <td>7</td>
+                <td>8</td>
+                <td>9</td>
+                <td>10</td>
+            </tr>
+            <tr>
+                <td>y</td>
+                <td ng-repeat="result in App.results track by $index">{{ result | number:2 }}</td>
+            </tr>
+        </table>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+    <script>
+        var myApp = angular.module('FormulaCalc', []);
+
+        myApp.controller('FormulaController', function FormulaController($scope) {
+            var self = this;
+
+            self.calculateFormula = calculateFormula;
+
+            self.selectedFormula = '';
+            self.aArgument;
+            self.bArgument;
+            self.showArgumentForm = false;
+            self.results = [];
+            self.formulas = [
+                {
+                    name: 'y = a * x + b',
+                    calculate: (aArgument, bArgument, xArgument) => {
+                        return aArgument * xArgument + +bArgument;
+                    }
+                },
+                {
+                    name: 'y = a * sin x + b * cos x',
+                    calculate: (aArgument, bArgument, xArgument) => {
+                        return aArgument * Math.sin(xArgument) + +bArgument * Math.cos(xArgument);
+                    }
+                },
+                {
+                    name: 'y = a * x^2 + b',
+                    calculate: (aArgument, bArgument, xArgument) => {
+                        return aArgument * Math.pow(xArgument, 2) + +bArgument;
+                    }
+                },
+                {
+                    name: 'y = a * tg x + b',
+                    calculate: (aArgument, bArgument, xArgument) => {
+                        return aArgument * Math.tan(xArgument) + +bArgument;
+                    }
+                },
+                {
+                    name: 'y = a * x^2 + b * x',
+                    calculate: (aArgument, bArgument, xArgument) => {
+                    return aArgument * Math.pow(xArgument, 2) + +bArgument * xArgument;
+                    }
+                }
+            ];
+
+            $scope.$watch(() => self.selectedFormula,
+                    function onFormulaChange(newValue, oldValue) {
+                        if (newValue !== oldValue) {
+                            self.showArgumentForm = true;
+                        }
+                    });
+
+            function calculateFormula() {
+                var index,
+                    formula;
+
+                if (self.aArgument || self.aArgument === 0 &&
+                    self.bArgument || self.bArgument === 0) {
+                    self.results = [];
+
+                    formula = self.formulas.find(isSelected);
+
+                    for (index = -10; index <= 10; index++) {
+                        self.results.push(
+                            formula.calculate(self.aArgument, self.bArgument, index)
+                        );
+                    }
+                }
+            }
+
+            function isSelected(element, index, array) {
+                return element.name === self.selectedFormula;
+            }
+        });
+    </script>
+</body>
+</html>
